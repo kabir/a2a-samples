@@ -1,16 +1,13 @@
 package com.samples.a2a;
 
-import io.a2a.server.agentexecution.AgentExecutor;
-import io.a2a.server.agentexecution.RequestContext;
-import io.a2a.server.events.EventQueue;
-import io.a2a.server.tasks.TaskUpdater;
-import io.a2a.spec.JSONRPCError;
-import io.a2a.spec.Message;
-import io.a2a.spec.Part;
-import io.a2a.spec.Task;
-import io.a2a.spec.TaskNotCancelableError;
-import io.a2a.spec.TaskState;
-import io.a2a.spec.TextPart;
+import org.a2aproject.sdk.server.agentexecution.AgentExecutor;
+import org.a2aproject.sdk.server.agentexecution.RequestContext;
+import org.a2aproject.sdk.server.tasks.AgentEmitter;
+import org.a2aproject.sdk.spec.A2AError;
+import org.a2aproject.sdk.spec.Task;
+import org.a2aproject.sdk.spec.TaskNotCancelableError;
+import org.a2aproject.sdk.spec.TaskState;
+import org.a2aproject.sdk.spec.TextPart;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Produces;
@@ -62,18 +59,17 @@ public final class Magic8BallAgentExecutorProducer {
 
         @Override
         public void execute(final RequestContext context,
-                            final EventQueue eventQueue)
-                throws JSONRPCError {
-            final TaskUpdater updater = new TaskUpdater(context, eventQueue);
+                            final AgentEmitter emitter)
+                throws A2AError {
 
             // mark the task as submitted and start working on it
             if (context.getTask() == null) {
-                updater.submit();
+                emitter.submit();
             }
-            updater.startWork();
+            emitter.startWork();
 
             // extract the text from the message
-            final String question = extractTextFromMessage(context.getMessage());
+            final String question = context.getUserInput();
 
             // Generate a unique memory ID for this request for fresh chat memory
             final String memoryId = UUID.randomUUID().toString();
@@ -89,46 +85,26 @@ public final class Magic8BallAgentExecutorProducer {
                  response = agent.answerQuestion(memoryId, question);
             }
 
-            // create the response part
-            final TextPart responsePart = new TextPart(response, null);
-            final List<Part<?>> parts = List.of(responsePart);
-
             // add the response as an artifact and complete the task
-            updater.addArtifact(parts, null, null, null);
-            updater.complete();
-        }
-
-        private String extractTextFromMessage(final Message message) {
-            final StringBuilder textBuilder = new StringBuilder();
-            if (message.getParts() != null) {
-                for (final Part<?> part : message.getParts()) {
-                    if (part instanceof TextPart textPart) {
-                        textBuilder.append(textPart.getText());
-                    }
-                }
-            }
-            return textBuilder.toString();
+            emitter.addArtifact(List.of(new TextPart(response, null)));
+            emitter.complete();
         }
 
         @Override
         public void cancel(final RequestContext context,
-                           final EventQueue eventQueue)
-                throws JSONRPCError {
+                           final AgentEmitter emitter)
+                throws A2AError {
             final Task task = context.getTask();
 
-            if (task.getStatus().state() == TaskState.CANCELED) {
-                // task already cancelled
+            if (task.status().state() == TaskState.TASK_STATE_CANCELED) {
                 throw new TaskNotCancelableError();
             }
 
-            if (task.getStatus().state() == TaskState.COMPLETED) {
-                // task already completed
+            if (task.status().state() == TaskState.TASK_STATE_COMPLETED) {
                 throw new TaskNotCancelableError();
             }
 
-            // cancel the task
-            final TaskUpdater updater = new TaskUpdater(context, eventQueue);
-            updater.cancel();
+            emitter.cancel();
         }
     }
 }
