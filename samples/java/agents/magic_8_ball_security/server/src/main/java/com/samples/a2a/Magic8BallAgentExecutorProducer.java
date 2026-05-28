@@ -82,8 +82,12 @@ public final class Magic8BallAgentExecutorProducer {
                             + memoryId + " for question: " + question);
 
             // call the Magic 8 Ball agent with the question
-
-            final String response = agent.answerQuestion(memoryId, question);
+            final String response;
+            if (Boolean.getBoolean("skip.agent")) {
+                response = new Magic8BallTools().shakeMagic8Ball(question);
+            } else {
+                 response = agent.answerQuestion(memoryId, question);
+            }
 
             // create the response part
             final TextPart responsePart = new TextPart(response, null);
