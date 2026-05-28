@@ -3,6 +3,7 @@ package com.samples.a2a;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Produces;
 import jakarta.inject.Inject;
+
 import java.util.List;
 
 import io.a2a.server.agentexecution.AgentExecutor;

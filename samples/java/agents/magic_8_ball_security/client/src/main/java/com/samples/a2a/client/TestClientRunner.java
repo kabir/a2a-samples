@@ -23,6 +23,7 @@ import io.a2a.client.http.A2ACardResolver;
 import io.a2a.spec.A2AClientException;
 import io.a2a.spec.AgentCard;
 import io.a2a.spec.Message;
+
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -79,153 +80,163 @@ import java.util.concurrent.CompletableFuture;
  */
 public final class TestClientRunner {
 
-  /** The default server URL to use. */
-  private static final String DEFAULT_SERVER_URL = "http://localhost:11000";
+    /**
+     * The default server URL to use.
+     */
+    private static final String DEFAULT_SERVER_URL = "http://localhost:11000";
 
-  /** The default message text to send. */
-  private static final String MESSAGE_TEXT
-          = "Should I deploy this code on Friday?";
+    /**
+     * The default message text to send.
+     */
+    private static final String MESSAGE_TEXT
+            = "Should I deploy this code on Friday?";
 
-  /** The default transport to use. */
-  private static final String DEFAULT_TRANSPORT = "jsonrpc";
+    /**
+     * The default transport to use.
+     */
+    private static final String DEFAULT_TRANSPORT = "jsonrpc";
 
-  /** Object mapper to use. */
-  private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    /**
+     * Object mapper to use.
+     */
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
-  private TestClientRunner() {
-    // Utility class, prevent instantiation
-  }
-
-  /** Prints usage information and exits. */
-  private static void printUsageAndExit() {
-    System.out.println("Usage: jbang TestClientRunner.java [OPTIONS]");
-    System.out.println();
-    System.out.println("Options:");
-    System.out.println(
-        "  --server-url URL    The URL of the A2A server agent (default: "
-            + DEFAULT_SERVER_URL
-            + ")");
-    System.out.println(
-        "  --message TEXT      The message to send to the agent "
-            + "(default: \""
-            + MESSAGE_TEXT
-            + "\")");
-    System.out.println(
-        "  --transport TYPE    "
-                + "The transport type to use: jsonrpc, grpc, or rest "
-            + "(default: "
-            + DEFAULT_TRANSPORT
-            + ")");
-    System.out.println("  --help, -h        Show this help message and exit");
-    System.out.println();
-    System.out.println("Examples:");
-    System.out.println("  jbang TestClientRunner.java "
-            + "--server-url http://localhost:11001");
-    System.out.println("  jbang TestClientRunner.java "
-            + "--message \"Should I refactor this code?\"");
-    System.out.println("  jbang TestClientRunner.java --transport grpc");
-    System.out.println(
-        "  jbang TestClientRunner.java --server-url http://localhost:11001 "
-            + "--message \"Will my tests pass?\" --transport rest");
-    System.exit(0);
-  }
-
-  /**
-   * Client entry point.
-   *
-   * @param args can optionally contain the --server-url,
-   *             --message, and --transport to use
-   */
-  public static void main(final String[] args) {
-    System.out.println("=== A2A Client with OAuth2 Authentication Example ===");
-
-    String serverUrl = DEFAULT_SERVER_URL;
-    String messageText = MESSAGE_TEXT;
-    String transport = DEFAULT_TRANSPORT;
-
-    // Parse command line arguments
-    for (int i = 0; i < args.length; i++) {
-      switch (args[i]) {
-        case "--server-url":
-          if (i + 1 < args.length) {
-            serverUrl = args[i + 1];
-            i++;
-          } else {
-            System.err.println("Error: --server-url requires a value");
-            printUsageAndExit();
-          }
-          break;
-        case "--message":
-          if (i + 1 < args.length) {
-            messageText = args[i + 1];
-            i++;
-          } else {
-            System.err.println("Error: --message requires a value");
-            printUsageAndExit();
-          }
-          break;
-        case "--transport":
-          if (i + 1 < args.length) {
-            transport = args[i + 1];
-            i++;
-          } else {
-            System.err.println("Error: --transport requires a value");
-            printUsageAndExit();
-          }
-          break;
-        case "--help":
-        case "-h":
-          printUsageAndExit();
-          break;
-        default:
-          System.err.println("Error: Unknown argument: " + args[i]);
-          printUsageAndExit();
-      }
+    private TestClientRunner() {
+        // Utility class, prevent instantiation
     }
 
-    try {
-      System.out.println("Connecting to agent at: " + serverUrl);
-      System.out.println("Using transport: " + transport);
-
-      // Fetch the public agent card
-      AgentCard publicAgentCard = new A2ACardResolver(serverUrl).getAgentCard();
-      System.out.println("Successfully fetched public agent card:");
-      System.out.println(OBJECT_MAPPER.writeValueAsString(publicAgentCard));
-      System.out.println("Using public agent card for client initialization.");
-
-      // Create a CompletableFuture to handle async response
-      final CompletableFuture<String> messageResponse
-              = new CompletableFuture<>();
-
-      // Create the A2A client with the specified transport using TestClient
-      Client client = TestClient.createClient(publicAgentCard,
-              messageResponse, transport);
-
-      // Create and send the message
-      Message message = A2A.toUserMessage(messageText);
-
-      System.out.println("Sending message: " + messageText);
-      System.out.println("Using " + transport
-              + " transport with OAuth2 Bearer token");
-      try {
-        client.sendMessage(message);
-      } catch (A2AClientException e) {
-        messageResponse.completeExceptionally(e);
-      }
-      System.out.println("Message sent successfully. Waiting for response...");
-
-      try {
-        // Wait for response
-        String responseText = messageResponse.get();
-        System.out.println("Final response: " + responseText);
-      } catch (Exception e) {
-        System.err.println("Failed to get response: " + e.getMessage());
-        e.printStackTrace();
-      }
-
-    } catch (Exception e) {
-      System.err.println("An error occurred: " + e.getMessage());
-      e.printStackTrace();
+    /**
+     * Prints usage information and exits.
+     */
+    private static void printUsageAndExit() {
+        System.out.println("Usage: jbang TestClientRunner.java [OPTIONS]");
+        System.out.println();
+        System.out.println("Options:");
+        System.out.println(
+                "  --server-url URL    The URL of the A2A server agent (default: "
+                        + DEFAULT_SERVER_URL
+                        + ")");
+        System.out.println(
+                "  --message TEXT      The message to send to the agent "
+                        + "(default: \""
+                        + MESSAGE_TEXT
+                        + "\")");
+        System.out.println(
+                "  --transport TYPE    "
+                        + "The transport type to use: jsonrpc, grpc, or rest "
+                        + "(default: "
+                        + DEFAULT_TRANSPORT
+                        + ")");
+        System.out.println("  --help, -h        Show this help message and exit");
+        System.out.println();
+        System.out.println("Examples:");
+        System.out.println("  jbang TestClientRunner.java "
+                + "--server-url http://localhost:11001");
+        System.out.println("  jbang TestClientRunner.java "
+                + "--message \"Should I refactor this code?\"");
+        System.out.println("  jbang TestClientRunner.java --transport grpc");
+        System.out.println(
+                "  jbang TestClientRunner.java --server-url http://localhost:11001 "
+                        + "--message \"Will my tests pass?\" --transport rest");
+        System.exit(0);
     }
-  }
+
+    /**
+     * Client entry point.
+     *
+     * @param args can optionally contain the --server-url,
+     *             --message, and --transport to use
+     */
+    public static void main(final String[] args) {
+        System.out.println("=== A2A Client with OAuth2 Authentication Example ===");
+
+        String serverUrl = DEFAULT_SERVER_URL;
+        String messageText = MESSAGE_TEXT;
+        String transport = DEFAULT_TRANSPORT;
+
+        // Parse command line arguments
+        for (int i = 0; i < args.length; i++) {
+            switch (args[i]) {
+                case "--server-url":
+                    if (i + 1 < args.length) {
+                        serverUrl = args[i + 1];
+                        i++;
+                    } else {
+                        System.err.println("Error: --server-url requires a value");
+                        printUsageAndExit();
+                    }
+                    break;
+                case "--message":
+                    if (i + 1 < args.length) {
+                        messageText = args[i + 1];
+                        i++;
+                    } else {
+                        System.err.println("Error: --message requires a value");
+                        printUsageAndExit();
+                    }
+                    break;
+                case "--transport":
+                    if (i + 1 < args.length) {
+                        transport = args[i + 1];
+                        i++;
+                    } else {
+                        System.err.println("Error: --transport requires a value");
+                        printUsageAndExit();
+                    }
+                    break;
+                case "--help":
+                case "-h":
+                    printUsageAndExit();
+                    break;
+                default:
+                    System.err.println("Error: Unknown argument: " + args[i]);
+                    printUsageAndExit();
+            }
+        }
+
+        try {
+            System.out.println("Connecting to agent at: " + serverUrl);
+            System.out.println("Using transport: " + transport);
+
+            // Fetch the public agent card
+            AgentCard publicAgentCard = new A2ACardResolver(serverUrl).getAgentCard();
+            System.out.println("Successfully fetched public agent card:");
+            System.out.println(OBJECT_MAPPER.writeValueAsString(publicAgentCard));
+            System.out.println("Using public agent card for client initialization.");
+
+            // Create a CompletableFuture to handle async response
+            final CompletableFuture<String> messageResponse
+                    = new CompletableFuture<>();
+
+            // Create the A2A client with the specified transport using TestClient
+            Client client = TestClient.createClient(publicAgentCard,
+                    messageResponse, transport);
+
+            // Create and send the message
+            Message message = A2A.toUserMessage(messageText);
+
+            System.out.println("Sending message: " + messageText);
+            System.out.println("Using " + transport
+                    + " transport with OAuth2 Bearer token");
+            try {
+                client.sendMessage(message);
+            } catch (A2AClientException e) {
+                messageResponse.completeExceptionally(e);
+            }
+            System.out.println("Message sent successfully. Waiting for response...");
+
+            try {
+                // Wait for response
+                String responseText = messageResponse.get();
+                System.out.println("Final response: " + responseText);
+            } catch (Exception e) {
+                System.err.println("Failed to get response: " + e.getMessage());
+                e.printStackTrace();
+            }
+
+        } catch (Exception e) {
+            System.err.println("An error occurred: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
 }
