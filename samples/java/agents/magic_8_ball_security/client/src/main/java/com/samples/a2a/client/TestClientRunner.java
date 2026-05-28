@@ -1,9 +1,9 @@
 /// usr/bin/env jbang "$0" "$@" ; exit $?
-//DEPS org.a2aproject.sdk:a2a-java-sdk-client:1.0.0.Beta1
-//DEPS org.a2aproject.sdk:a2a-java-sdk-client-transport-jsonrpc:1.0.0.Beta1
-//DEPS org.a2aproject.sdk:a2a-java-sdk-client-transport-grpc:1.0.0.Beta1
-//DEPS org.a2aproject.sdk:a2a-java-sdk-client-transport-rest:1.0.0.Beta1
-//DEPS org.a2aproject.sdk:a2a-java-sdk-client-transport-spi:1.0.0.Beta1
+//DEPS org.a2aproject.sdk:a2a-java-sdk-client:1.0.0.CR1
+//DEPS org.a2aproject.sdk:a2a-java-sdk-client-transport-jsonrpc:1.0.0.CR1
+//DEPS org.a2aproject.sdk:a2a-java-sdk-client-transport-grpc:1.0.0.CR1
+//DEPS org.a2aproject.sdk:a2a-java-sdk-client-transport-rest:1.0.0.CR1
+//DEPS org.a2aproject.sdk:a2a-java-sdk-client-transport-spi:1.0.0.CR1
 //DEPS com.fasterxml.jackson.core:jackson-databind:2.15.2
 //DEPS io.grpc:grpc-netty-shaded:1.69.1
 //DEPS org.keycloak:keycloak-authz-client:25.0.1
